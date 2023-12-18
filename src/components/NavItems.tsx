@@ -1,13 +1,27 @@
 "use client"
 
 import { PRODUCT_CATEGORIES } from "@/ config";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NavItem from "./NavItem";
 
 const NavItems = () => {
     const [activeIndex, setActiveIndex] = useState<null | number>(null);
     const isAnyOpen = activeIndex !== null;
-    
+
+    useEffect(() => {
+        const handler = (event: KeyboardEvent) => {
+            if(event.key === "Escape") {
+                setActiveIndex(null);
+            }
+        }
+
+        document.addEventListener("keydown", handler);
+
+        return () => {
+            document.removeEventListener("keydown", handler);
+        }
+    }, [])
+
     return (
         <div className="flex gap-4 h-full">
             {PRODUCT_CATEGORIES.map((category, index) => {
