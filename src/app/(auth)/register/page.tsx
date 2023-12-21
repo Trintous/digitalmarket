@@ -5,12 +5,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { AuthCredentialsValidator, TAuthCredentialsValidator } from "@/lib/validators/account-credentials-validator";
+import { trpc } from "@/trpc/client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { AuthCredentialsValidator, TAuthCredentialsValidator } from "@/lib/validators/account-credentials-validator";
 
 const Page = () => {
     const {
@@ -21,11 +21,13 @@ const Page = () => {
         resolver: zodResolver(AuthCredentialsValidator)
     });
 
+    const { mutate, isLoading } = trpc.auth.createPayloadUser.useMutation({});
+
     const onSubmit = ({
         email,
         password
     }: TAuthCredentialsValidator) => {
-        // TODO: Send data to the server
+        mutate({ email, password })
     }
 
     return (
@@ -65,6 +67,7 @@ const Page = () => {
                                     <Label htmlFor="password">Password</Label>
                                     <Input
                                         {...register("password")}
+                                        type="password"
                                         className={cn({
                                             "focus-visible:ring-red-500": errors.password
                                         })}
