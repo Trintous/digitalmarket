@@ -10,7 +10,10 @@ import { trpc } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { ZodError } from "zod";
 
 const Page = () => {
     const {
@@ -21,7 +24,25 @@ const Page = () => {
         resolver: zodResolver(AuthCredentialsValidator)
     });
 
-    const { mutate, isLoading } = trpc.auth.createPayloadUser.useMutation({});
+    const router = useRouter();
+
+    const { mutate, isLoading } = trpc.auth.createPayloadUser.useMutation({
+        onError: (err) => {
+            if(err.data?.code === "CONFLICT") {
+                return toast.error("An account with that email already exists. Please try again.");
+            }
+
+            if(err instanceof ZodError) {
+                return toast.error(err.issues[0].message);
+            }
+
+            toast.error("Something went wrong. Please try again.");
+        },
+        onSuccess: ({ sentToEmail }) => {
+            toast.success(`Verification email sent to ${sentToEmail}`);
+            router.push(`/verify-email?to=${sentToEmail}`);
+        }
+    });
 
     const onSubmit = ({
         email,
@@ -61,6 +82,9 @@ const Page = () => {
                                         })}
                                         placeholder="you@example.com"
                                     />
+                                    {errors?.email && (
+                                        <p className="text-sm text-red-500">{errors.email.message}</p>
+                                    )}
                                 </div>
 
                                 <div className="grid gap-1 py-2">
@@ -73,6 +97,9 @@ const Page = () => {
                                         })}
                                         placeholder="Password"
                                     />
+                                    {errors?.password && (
+                                        <p className="text-sm text-red-500">{errors.password.message}</p>
+                                    )}
                                 </div>
 
                                 <Button>Sign Up</Button>
