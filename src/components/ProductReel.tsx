@@ -44,8 +44,6 @@ const ProductReel = (props: ProductReelProps) => {
         ).fill(null)
     }
 
-    console.log(products)
-
     return (
         <section className='py-12'>
             <div className='md:flex md:items-center md:justify-between mb-4'>
